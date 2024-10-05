@@ -34,39 +34,35 @@ public class PlayerMove : MonoBehaviour
         MovePlayer();
         UpdateAnimation();
         MoveCamera();
+        Aiming();
     }
 
     private void HandleInput()
     {
         _horizontal = Input.GetAxis("Horizontal");
         _vertical = Input.GetAxis("Vertical");
-
-        if (_vertical < 0)
-        {
-            _vertical *= 0.3f;
-            _horizontal *= 0.3f;
-        }
-
-        if (_isAiming)
-        {
-            _vertical *= 0.5f;
-            _horizontal *= 0.5f;
-        }
-
         _mouseX = Input.GetAxis("Mouse X") * viewSpeed * Time.deltaTime;
-
+    }
+    private void Aiming()
+    {
         if (Input.GetMouseButton(1))
         {
             _cameraOffset = new Vector3(0f, 1.5f, -2f);
             _isAiming = true;
-            aimIndicator.SetActive(true);
+            _vertical *= 0.5f;
+            _horizontal *= 0.5f;
         }
         else
         {
             _cameraOffset = new Vector3(0f, 2f, -3f);
             _isAiming = false;
-            aimIndicator.SetActive(false);
         }
+        if (_vertical < 0)
+        {
+            _vertical *= 0.3f;
+            _horizontal *= 0.3f;
+        }
+        aimIndicator.SetActive(_isAiming);
     }
 
     private void MovePlayer()
