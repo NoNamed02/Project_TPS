@@ -6,12 +6,9 @@ using UnityEngine.EventSystems;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField]
     private float _horizontal; 
-    [SerializeField]
     private float _vertical; 
     private float _mouseX;
-    [SerializeField]
     private bool _canMove = true;
 
     private Animator _animator;
@@ -19,13 +16,17 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed = 10f;
     public float viewSpeed = 50f;
     public Vector3 cameraOffset;
-    public bool isAiming;
+    public bool isAiming = false;
+    public bool isReload = false;
+    private int _leftBullet = 30;
 
     private GameObject _aimIndicator;
     public Transform aimTarget;
-
+    public GameObject gunMuzzle;
     private CameraMovement _cameraMovement;
 
+    private float fireRate = 1f / 3f;
+    private float lastFireTime = 0f;
     void Start()
     {
         _animator = GetComponent<Animator>();
@@ -40,13 +41,26 @@ public class PlayerMovement : MonoBehaviour
         MovePlayer();
         UpdateAnimation();
         Aiming();
+        ReloadSystem();
         _cameraMovement.MoveCamera(this, aimTarget);
-
-        
     }
-
-    private float _lastSpaceTime;
-    private float _doubleClickThreshold = 0.3f;
+    private void ReloadSystem()
+    {
+        _animator.SetBool("IsReload", isReload);
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            StartCoroutine(ReLoadStart());
+            Debug.Log("left bullet : " + _leftBullet);
+        }
+    }
+    private IEnumerator ReLoadStart()
+    {
+        isReload = true;
+        yield return new WaitForSeconds (2f);
+        Debug.Log("Reloaded");
+        _leftBullet = 30;
+        isReload = false;
+    }
     private void HandleInput()
     {
         _horizontal = Input.GetAxis("Horizontal");
@@ -56,9 +70,79 @@ public class PlayerMovement : MonoBehaviour
     }
     private void Aiming()
     {
-        isAiming = Input.GetMouseButton(1);
-        cameraOffset = isAiming ? new Vector3(0f, 1.5f, -2f) : new Vector3(0f, 2f, -3f);
+        _animator.SetBool("IsAiming", isAiming);
+        if (Input.GetMouseButtonDown(1))
+        {
+            isAiming = !isAiming;
+        }
+        //isAiming = Input.GetMouseButton(1);
         _aimIndicator.SetActive(isAiming);
+        if (isAiming)
+        {
+            cameraOffset = new Vector3(0f, 1.5f, -2f);
+            shoot();
+        }
+        else
+        {
+            cameraOffset = new Vector3(0f, 2f, -3f);
+        }
+    }
+    private void shoot()
+    {
+        LayerMask layerMask = ~LayerMask.GetMask("Player");
+        Vector3 screenCenter = new Vector3(Screen.width / 2, Screen.height / 2, 0);
+        Ray cameraRay = Camera.main.ScreenPointToRay(screenCenter);
+        Vector3 targetPoint;
+        float maxDistance = 100f;
+
+        if (Physics.Raycast(cameraRay, out RaycastHit cameraHitInfo, maxDistance, layerMask))
+        {
+            targetPoint = cameraHitInfo.point;
+        }
+        else
+        {
+            targetPoint = cameraRay.GetPoint(maxDistance);
+        }
+
+        // 총구에서 조준점으로 방향 계산
+        Vector3 muzzlePosition = gunMuzzle.transform.position;
+        Vector3 directionToTarget = (targetPoint - muzzlePosition).normalized;
+        // 총구 근처 Ray 충돌 검사
+        if (Physics.Raycast(muzzlePosition, directionToTarget, out RaycastHit muzzleHitInfo, maxDistance))
+        {
+            targetPoint = muzzleHitInfo.point;
+            directionToTarget = (targetPoint - muzzlePosition).normalized;
+        }
+        
+        if (Input.GetMouseButton(0) && Time.time >= lastFireTime + fireRate && _leftBullet > 0 && !isReload)
+        {
+            lastFireTime = Time.time;
+            --_leftBullet;
+            if (Physics.Raycast(muzzlePosition, directionToTarget, out RaycastHit enemy, maxDistance))
+            {
+                if (enemy.collider.CompareTag("Enemy"))
+                {
+                    Debug.Log("적 맞춤");
+                }
+            }
+        }
+        else if (Input.GetMouseButton(0) && _leftBullet <= 0)
+        {
+            Debug.Log("No left bullet");
+        }
+
+
+        // 확인용 Ray
+        if (Physics.Raycast(muzzlePosition, directionToTarget, out RaycastHit Hit, maxDistance))
+        {
+            // 충돌이 발생했을 경우: 충돌 지점까지만 그리기
+            Debug.DrawRay(muzzlePosition, (Hit.point - muzzlePosition), Color.red, 1.5f);
+        }
+        else
+        {
+            // 충돌이 발생하지 않았을 경우: 최대 거리까지 그리기
+            Debug.DrawRay(muzzlePosition, directionToTarget * maxDistance, Color.red, 1.5f);
+        }
     }
     private void ControllSpeed()
     {
@@ -85,25 +169,8 @@ public class PlayerMovement : MonoBehaviour
 
             Vector3 movement = new Vector3(mappedX, 0, mappedY) * moveSpeed * Time.deltaTime;
 
-            /*
-            if (_vertical > 0.01f && _horizontal > 0.01f) // WD
-            {
-                Debug.Log("check");
-                movement = new Vector3(mappedX * _horizontal * 2, 0, mappedY) * moveSpeed * Time.deltaTime;
-            }
-            else if (_vertical > 0.01f && _horizontal < -0.01f)
-            {
-                Debug.Log("check2");
-                movement = new Vector3(mappedX, 0, mappedY) * moveSpeed * Time.deltaTime;
-            }
-            else
-            {
-                movement = new Vector3(mappedX, 0, mappedY) * moveSpeed * Time.deltaTime;
-            }
-            */
             movement = new Vector3(mappedX, 0, mappedY) * moveSpeed * Time.deltaTime;
             transform.Translate(movement);
-
             RotatePlayer();
         }
     }
