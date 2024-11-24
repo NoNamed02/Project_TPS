@@ -27,12 +27,15 @@ public class PlayerMovement : MonoBehaviour
 
     private float fireRate = 1f / 3f;
     private float lastFireTime = 0f;
+
+    public int HP = 100;
     void Start()
     {
         _animator = GetComponent<Animator>();
         _cameraMovement = Camera.main.GetComponent<CameraMovement>();
         _aimIndicator = GameObject.Find("CrossHair");
-        Cursor.visible = false;
+        //Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked; 
     }
 
     void Update()
@@ -80,14 +83,14 @@ public class PlayerMovement : MonoBehaviour
         if (isAiming)
         {
             cameraOffset = new Vector3(0f, 1.5f, -2f);
-            shoot();
+            Shoot();
         }
         else
         {
             cameraOffset = new Vector3(0f, 2f, -3f);
         }
     }
-    private void shoot()
+    private void Shoot()
     {
         LayerMask layerMask = ~LayerMask.GetMask("Player");
         Vector3 screenCenter = new Vector3(Screen.width / 2, Screen.height / 2, 0);
@@ -123,6 +126,8 @@ public class PlayerMovement : MonoBehaviour
                 if (enemy.collider.CompareTag("Enemy"))
                 {
                     Debug.Log("적 맞춤");
+                    enemy.collider.GetComponent<Enemy_3D>().HP -= 1;
+                    Debug.Log("enemy HP = " + enemy.collider.GetComponent<Enemy_3D>().HP);
                 }
             }
         }
