@@ -6,35 +6,44 @@ using UnityEngine.EventSystems;
 
 public class PlayerMovement : MonoBehaviour
 {
+    // Keyboard input
     private float _horizontal; 
     private float _vertical; 
     private float _mouseX;
-    private bool _canMove = true;
-
+    public float mouseY;
+    private bool _mouseLeft;
+    private bool _mouseRight;
+    private bool _spaceKey;
+    
+    
+    // animator
     private Animator _animator;
 
+    // movement system
     public float moveSpeed = 10f;
     public float viewSpeed = 50f;
     public Vector3 cameraOffset;
     public bool isAiming = false;
     public bool isReload = false;
-    private int _leftBullet = 30;
+    private int _leftBullets = 30;
+    private bool _canMove = true;
 
+    // combet system
     private GameObject _aimIndicator;
     public Transform aimTarget;
     public GameObject gunMuzzle;
     private CameraMovement _cameraMovement;
-
-    private float fireRate = 1f / 3f;
-    private float lastFireTime = 0f;
-
+    private float _fireRate = 1f / 10f;
+    private float _lastFireTime = 0f;
     public int HP = 100;
+            // combet VFX
+            public GameObject shootVFX;
+
     void Start()
     {
         _animator = GetComponent<Animator>();
         _cameraMovement = Camera.main.GetComponent<CameraMovement>();
         _aimIndicator = GameObject.Find("CrossHair");
-        //Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked; 
     }
 
@@ -49,11 +58,10 @@ public class PlayerMovement : MonoBehaviour
     }
     private void ReloadSystem()
     {
-        _animator.SetBool("IsReload", isReload);
         if (Input.GetKeyDown(KeyCode.R))
         {
             StartCoroutine(ReLoadStart());
-            Debug.Log("left bullet : " + _leftBullet);
+            Debug.Log("left bullet : " + _leftBullets);
         }
     }
     private IEnumerator ReLoadStart()
@@ -61,7 +69,7 @@ public class PlayerMovement : MonoBehaviour
         isReload = true;
         yield return new WaitForSeconds (2f);
         Debug.Log("Reloaded");
-        _leftBullet = 30;
+        _leftBullets = 30;
         isReload = false;
     }
     private void HandleInput()
@@ -69,16 +77,31 @@ public class PlayerMovement : MonoBehaviour
         _horizontal = Input.GetAxis("Horizontal");
         _vertical = Input.GetAxis("Vertical");
         _mouseX = Input.GetAxis("Mouse X") * viewSpeed * Time.deltaTime;
+        mouseY = Input.GetAxis("Mouse Y");
+        _mouseLeft = Input.GetMouseButton(0);
+        _mouseRight = Input.GetMouseButtonDown(1);
+        _spaceKey = Input.GetKeyDown(KeyCode.Space);
         ControllSpeed();
+    }
+    private void ControllSpeed()
+    {
+        if (_vertical < 0)
+        {
+            _vertical *= 0.3f;
+            _horizontal *= 0.3f;
+        }
+        if (isAiming)
+        {
+            _vertical *= 0.5f;
+            _horizontal *= 0.5f;
+        }
     }
     private void Aiming()
     {
-        _animator.SetBool("IsAiming", isAiming);
-        if (Input.GetMouseButtonDown(1))
+        if (_mouseRight)
         {
             isAiming = !isAiming;
         }
-        //isAiming = Input.GetMouseButton(1);
         _aimIndicator.SetActive(isAiming);
         if (isAiming)
         {
@@ -117,10 +140,11 @@ public class PlayerMovement : MonoBehaviour
             directionToTarget = (targetPoint - muzzlePosition).normalized;
         }
         
-        if (Input.GetMouseButton(0) && Time.time >= lastFireTime + fireRate && _leftBullet > 0 && !isReload)
+        if (_mouseLeft && Time.time >= _lastFireTime + _fireRate && _leftBullets > 0 && !isReload)
         {
-            lastFireTime = Time.time;
-            --_leftBullet;
+            _lastFireTime = Time.time;
+            --_leftBullets;
+            MakeGunRecoil();
             if (Physics.Raycast(muzzlePosition, directionToTarget, out RaycastHit enemy, maxDistance))
             {
                 if (enemy.collider.CompareTag("Enemy"))
@@ -130,14 +154,24 @@ public class PlayerMovement : MonoBehaviour
                     Debug.Log("enemy HP = " + enemy.collider.GetComponent<Enemy_3D>().HP);
                 }
             }
+            RayTest(muzzlePosition, directionToTarget, maxDistance);
+            UsingVFX(shootVFX, targetPoint, 0.7f);
         }
-        else if (Input.GetMouseButton(0) && _leftBullet <= 0)
+        else if (_mouseLeft && _leftBullets <= 0)
         {
             Debug.Log("No left bullet");
+            RayTest(muzzlePosition, directionToTarget, maxDistance);
         }
+    }
 
+    private void UsingVFX(GameObject VFX, Vector3 instnacePoint, float desTime)
+    {
+        GameObject vfx = Instantiate(VFX, instnacePoint, Quaternion.identity);
+        Destroy(vfx, desTime);
+    }
 
-        // 확인용 Ray
+    private void RayTest(Vector3 muzzlePosition, Vector3 directionToTarget, float maxDistance) // ray 확인용임 굳이굳이 ???
+    {
         if (Physics.Raycast(muzzlePosition, directionToTarget, out RaycastHit Hit, maxDistance))
         {
             // 충돌이 발생했을 경우: 충돌 지점까지만 그리기
@@ -149,18 +183,12 @@ public class PlayerMovement : MonoBehaviour
             Debug.DrawRay(muzzlePosition, directionToTarget * maxDistance, Color.red, 1.5f);
         }
     }
-    private void ControllSpeed()
+
+    private void MakeGunRecoil()
     {
-        if (_vertical < 0)
-        {
-            _vertical *= 0.3f;
-            _horizontal *= 0.3f;
-        }
-        if (isAiming)
-        {
-            _vertical *= 0.5f;
-            _horizontal *= 0.5f;
-        }
+        _cameraMovement.verticalRotation -= 1.5f;
+        float RandomHorizontalValue = Random.Range(-1f, 1f);
+        transform.rotation = transform.rotation * Quaternion.Euler(0f, RandomHorizontalValue, 0f);
     }
 
     private void MovePlayer()
@@ -196,13 +224,15 @@ public class PlayerMovement : MonoBehaviour
         _animator.SetFloat("Speed", movementMagnitude > 0.5f ? 1f : 0f);
         _animator.SetFloat("X", _horizontal);
         _animator.SetFloat("Y", _vertical);
+        _animator.SetBool("IsAiming", isAiming);
+        _animator.SetBool("IsReload", isReload);
     }
 
     private void OnCollisionStay(Collision other) {
         if (other.gameObject.tag == "wall")
         {
             Debug.Log("Hit wall");
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (_spaceKey)
             {
                 //transform.rotation = other.transform.rotation;
                 StartCoroutine(WallJump());
