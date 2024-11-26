@@ -5,7 +5,9 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     // Keyboard input
+    [SerializeField]
     private float _horizontal; 
+    [SerializeField]
     private float _vertical; 
     private float _mouseX;
     public float mouseY;
@@ -72,22 +74,24 @@ public class PlayerMovement : MonoBehaviour
             {
                 if (HitTarget.collider.CompareTag("Cover"))
                 {
-                    if (isAiming) isAiming = false;
                     Debug.Log("엄폐 가능");
                     StartCoroutine(TakeCoverStart(HitTarget.collider.gameObject.transform));
                 }
             }
         }
-        if (_isCover && (isAiming || (Math.Abs(_horizontal) >= 0.1f) || Math.Abs(_vertical) >= 0.1f))
+        if (_canMove && _isCover && (isAiming || (Math.Abs(_horizontal) >= 0.1f || Math.Abs(_vertical) >= 0.1f))) // 엄폐중 이동 시도시 엄폐 빠져나감
+        {    
             _isCover = false;
+        }
         Debug.DrawRay(transform.position + new Vector3 (0f, 1f, 0f), transform.forward * 1f, Color.blue, 0.5f);
     }
     private IEnumerator TakeCoverStart(Transform cover)
     {
-        _isCover = true;
+        isAiming = false;
         _canMove = false;
+        _isCover = true;
         Vector3 startPos = transform.position;
-        Vector3 coverPos = cover.TransformPoint(new Vector3(0f, 0f, -0.9f));
+        Vector3 coverPos = cover.TransformPoint(new Vector3(0f, 0f, -0.9f)); // 나중에 좀더 보간할 방법이 있음
         coverPos.y = transform.position.y;
         // 이동 시간 설정
         float duration = 0.3f; // 이동에 걸리는 시간 (초)
@@ -101,7 +105,7 @@ public class PlayerMovement : MonoBehaviour
         }
         transform.position = coverPos;
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.8f);
         Debug.Log("Cover End");
         _canMove = true;
     }
@@ -123,8 +127,13 @@ public class PlayerMovement : MonoBehaviour
     }
     private void HandleInput()
     {
-        _horizontal = Input.GetAxis("Horizontal");
-        _vertical = Input.GetAxis("Vertical");
+        float rawHorizontal = Input.GetAxisRaw("Horizontal");
+        float rawVertical = Input.GetAxisRaw("Vertical");
+
+        // 보간하여 부드럽게 값 변경
+        _horizontal = Mathf.MoveTowards(_horizontal, rawHorizontal, Time.deltaTime * 3f); // 10f는 보간 속도
+        _vertical = Mathf.MoveTowards(_vertical, rawVertical, Time.deltaTime * 3f);
+
         _mouseX = Input.GetAxis("Mouse X") * viewSpeed * Time.deltaTime;
         mouseY = Input.GetAxis("Mouse Y");
         _mouseLeft = Input.GetMouseButton(0);
@@ -137,13 +146,18 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_vertical < 0)
         {
-            _vertical *= 0.3f;
-            _horizontal *= 0.3f;
+            _vertical *= 0.8f;
+            _horizontal *= 0.8f;
         }
         if (isAiming)
         {
-            _vertical *= 0.5f;
-            _horizontal *= 0.5f;
+            _vertical *= 0.8f;
+            _horizontal *= 0.8f;
+        }
+        if (!_canMove)
+        {
+            _horizontal = 0f;
+            _vertical = 0f;
         }
     }
     private void Aiming()
@@ -278,26 +292,12 @@ public class PlayerMovement : MonoBehaviour
         float movementMagnitude = new Vector3(_horizontal, 0, _vertical).magnitude; // 이거 뭐임??
         if (_canMove)
         {
-            //_isCover = false;
-            _animator.SetFloat("Speed", movementMagnitude > 0.5f ? 1f : 0f);
-            _animator.SetFloat("X", _horizontal);
-            _animator.SetFloat("Y", _vertical);
+            _animator.SetFloat("X", _vertical);
+            _animator.SetFloat("Y", _horizontal);
             _animator.SetBool("IsAiming", isAiming);
             _animator.SetBool("IsReload", isReload);
         }
         _animator.SetBool("IsCover", _isCover);
-    }
-
-    private void OnCollisionStay(Collision other) {
-        if (other.gameObject.tag == "wall")
-        {
-            Debug.Log("Hit wall");
-            if (_KeySpace)
-            {
-                //transform.rotation = other.transform.rotation;
-                StartCoroutine(WallJump());
-            }
-        }
     }
 
     IEnumerator WallJump()
