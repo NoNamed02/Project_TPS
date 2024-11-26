@@ -1,8 +1,6 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -13,7 +11,8 @@ public class PlayerMovement : MonoBehaviour
     public float mouseY;
     private bool _mouseLeft;
     private bool _mouseRight;
-    private bool _spaceKey;
+    private bool _KeySpace;
+    private bool _keyR;
     
     
     // animator
@@ -27,6 +26,8 @@ public class PlayerMovement : MonoBehaviour
     public bool isReload = false;
     private int _leftBullets = 30;
     private bool _canMove = true;
+    [SerializeField]
+    private bool _isCover = false;
 
     // combet system
     private GameObject _aimIndicator;
@@ -38,12 +39,14 @@ public class PlayerMovement : MonoBehaviour
     public int HP = 100;
             // combet VFX
             public GameObject shootVFX;
+            private ObjectPool _vfxPool;
 
     void Start()
     {
         _animator = GetComponent<Animator>();
         _cameraMovement = Camera.main.GetComponent<CameraMovement>();
         _aimIndicator = GameObject.Find("CrossHair");
+        _vfxPool = FindObjectOfType<ObjectPool>();
         Cursor.lockState = CursorLockMode.Locked; 
     }
 
@@ -54,11 +57,57 @@ public class PlayerMovement : MonoBehaviour
         UpdateAnimation();
         Aiming();
         ReloadSystem();
+        TakeCover();
         _cameraMovement.MoveCamera(this, aimTarget);
+    }
+    private void TakeCover()
+    {
+        if (_KeySpace && _canMove)
+        {
+            Vector3 PlayerPos = transform.position + new Vector3 (0f, 1f, 0f);
+            Ray coverRay = new Ray(PlayerPos, transform.forward);
+            LayerMask layerMaskPlayer = ~LayerMask.GetMask("Player");
+            float _coverRange = 1f;
+            if (Physics.Raycast(coverRay, out RaycastHit HitTarget, _coverRange, layerMaskPlayer))
+            {
+                if (HitTarget.collider.CompareTag("Cover"))
+                {
+                    if (isAiming) isAiming = false;
+                    Debug.Log("엄폐 가능");
+                    StartCoroutine(TakeCoverStart(HitTarget.collider.gameObject.transform));
+                }
+            }
+        }
+        if (_isCover && (isAiming || (Math.Abs(_horizontal) >= 0.1f) || Math.Abs(_vertical) >= 0.1f))
+            _isCover = false;
+        Debug.DrawRay(transform.position + new Vector3 (0f, 1f, 0f), transform.forward * 1f, Color.blue, 0.5f);
+    }
+    private IEnumerator TakeCoverStart(Transform cover)
+    {
+        _isCover = true;
+        _canMove = false;
+        Vector3 startPos = transform.position;
+        Vector3 coverPos = cover.TransformPoint(new Vector3(0f, 0f, -0.9f));
+        coverPos.y = transform.position.y;
+        // 이동 시간 설정
+        float duration = 0.3f; // 이동에 걸리는 시간 (초)
+        float elapsedTime = 0f;
+        transform.rotation = cover.rotation;
+        while (elapsedTime < duration)
+        {
+            transform.position = Vector3.Lerp(startPos, coverPos, elapsedTime / duration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = coverPos;
+
+        yield return new WaitForSeconds(0.5f);
+        Debug.Log("Cover End");
+        _canMove = true;
     }
     private void ReloadSystem()
     {
-        if (Input.GetKeyDown(KeyCode.R))
+        if (_keyR && !isReload)
         {
             StartCoroutine(ReLoadStart());
             Debug.Log("left bullet : " + _leftBullets);
@@ -80,7 +129,8 @@ public class PlayerMovement : MonoBehaviour
         mouseY = Input.GetAxis("Mouse Y");
         _mouseLeft = Input.GetMouseButton(0);
         _mouseRight = Input.GetMouseButtonDown(1);
-        _spaceKey = Input.GetKeyDown(KeyCode.Space);
+        _KeySpace = Input.GetKeyDown(KeyCode.Space);
+        _keyR = Input.GetKeyDown(KeyCode.R);
         ControllSpeed();
     }
     private void ControllSpeed()
@@ -164,10 +214,12 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void UsingVFX(GameObject VFX, Vector3 instnacePoint, float desTime)
+    private void UsingVFX(GameObject VFX, Vector3 instancePoint, float desTime)
     {
-        GameObject vfx = Instantiate(VFX, instnacePoint, Quaternion.identity);
-        Destroy(vfx, desTime);
+        //GameObject vfx = Instantiate(VFX, instnacePoint, Quaternion.identity);
+        //Destroy(vfx, desTime);
+
+        _vfxPool.GetObject(instancePoint, Quaternion.identity, desTime);
     }
 
     private void RayTest(Vector3 muzzlePosition, Vector3 directionToTarget, float maxDistance) // ray 확인용임 굳이굳이 ???
@@ -187,7 +239,7 @@ public class PlayerMovement : MonoBehaviour
     private void MakeGunRecoil()
     {
         _cameraMovement.verticalRotation -= 1.5f;
-        float RandomHorizontalValue = Random.Range(-1f, 1f);
+        float RandomHorizontalValue = UnityEngine.Random.Range(-1f, 1f);
         transform.rotation = transform.rotation * Quaternion.Euler(0f, RandomHorizontalValue, 0f);
     }
 
@@ -210,29 +262,37 @@ public class PlayerMovement : MonoBehaviour
 
     private void RotatePlayer()
     {
-        transform.Rotate(0, _mouseX * viewSpeed * Time.deltaTime, 0);
-        if (_vertical > 0.01f && _horizontal != 0) // WD
+        if (_canMove && !_isCover)
         {
-            Debug.Log("check");
-            transform.rotation = transform.rotation * Quaternion.Euler(0, _horizontal * 0.5f, 0);
+            transform.Rotate(0, _mouseX * viewSpeed * Time.deltaTime, 0);
+            if (_vertical > 0.01f && _horizontal != 0) // WD
+            {
+                //Debug.Log("check");
+                transform.rotation = transform.rotation * Quaternion.Euler(0, _horizontal * 0.5f, 0);
+            }
         }
     }
 
     private void UpdateAnimation()
     {
-        float movementMagnitude = new Vector3(_horizontal, 0, _vertical).magnitude;
-        _animator.SetFloat("Speed", movementMagnitude > 0.5f ? 1f : 0f);
-        _animator.SetFloat("X", _horizontal);
-        _animator.SetFloat("Y", _vertical);
-        _animator.SetBool("IsAiming", isAiming);
-        _animator.SetBool("IsReload", isReload);
+        float movementMagnitude = new Vector3(_horizontal, 0, _vertical).magnitude; // 이거 뭐임??
+        if (_canMove)
+        {
+            //_isCover = false;
+            _animator.SetFloat("Speed", movementMagnitude > 0.5f ? 1f : 0f);
+            _animator.SetFloat("X", _horizontal);
+            _animator.SetFloat("Y", _vertical);
+            _animator.SetBool("IsAiming", isAiming);
+            _animator.SetBool("IsReload", isReload);
+        }
+        _animator.SetBool("IsCover", _isCover);
     }
 
     private void OnCollisionStay(Collision other) {
         if (other.gameObject.tag == "wall")
         {
             Debug.Log("Hit wall");
-            if (_spaceKey)
+            if (_KeySpace)
             {
                 //transform.rotation = other.transform.rotation;
                 StartCoroutine(WallJump());
@@ -261,28 +321,6 @@ public class PlayerMovement : MonoBehaviour
         transform.position = endPosition;
 
         yield return new WaitForSeconds(0.3f);
-        _canMove = true;
-    }
-
-    IEnumerator Slide()
-    {
-        _canMove = false;
-        _animator.Play("SlIDE00");
-
-        float slideDuration = 1f;  // 슬라이딩 시간
-        float slideDistance = 3f;  // 슬라이딩 거리
-        Vector3 startPosition = transform.position;
-        Vector3 endPosition = startPosition + transform.forward * slideDistance;
-
-        float elapsedTime = 0f;
-        while (elapsedTime < slideDuration)
-        {
-            transform.position = Vector3.Lerp(startPosition, endPosition, elapsedTime / slideDuration);
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.position = endPosition;
         _canMove = true;
     }
 }
