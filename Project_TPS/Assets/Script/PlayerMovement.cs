@@ -142,24 +142,6 @@ public class PlayerMovement : MonoBehaviour
         _keyR = Input.GetKeyDown(KeyCode.R);
         ControllSpeed();
     }
-    private void ControllSpeed()
-    {
-        if (_vertical < 0)
-        {
-            _vertical *= 0.8f;
-            _horizontal *= 0.8f;
-        }
-        if (isAiming)
-        {
-            _vertical *= 0.8f;
-            _horizontal *= 0.8f;
-        }
-        if (!_canMove)
-        {
-            _horizontal = 0f;
-            _vertical = 0f;
-        }
-    }
     private void Aiming()
     {
         if (_mouseRight)
@@ -273,12 +255,31 @@ public class PlayerMovement : MonoBehaviour
             RotatePlayer();
         }
     }
+    private void ControllSpeed()
+    {
+        if (_vertical < 0)
+        {
+            _vertical *= 0.8f;
+            _horizontal *= 0.8f;
+        }
+        if (isAiming)
+        {
+            _vertical *= 0.95f;
+            _horizontal *= 0.95f;
+        }
+        if (!_canMove)
+        {
+            _horizontal = 0f;
+            _vertical = 0f;
+        }
+    }
 
     private void RotatePlayer()
     {
         if (_canMove && !_isCover)
         {
-            transform.Rotate(0, _mouseX * viewSpeed * Time.deltaTime, 0);
+            //transform.Rotate(0, _mouseX * viewSpeed * Time.deltaTime, 0);
+            transform.Rotate(0, _mouseX * viewSpeed, 0);
             if (_vertical > 0.01f && _horizontal != 0) // WD
             {
                 //Debug.Log("check");

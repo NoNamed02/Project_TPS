@@ -18,6 +18,7 @@ public class CinemachineEnd : MonoBehaviour
     {
         Player[0].SetActive(true);
         Player[1].SetActive(false);
+        Player[2].SetActive(false);
     }
 
     void Start()

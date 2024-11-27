@@ -134,13 +134,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a776e21d44d68a4a94bed8288c53480, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _horizontal: 0
+  _vertical: 0
+  mouseY: 0
   moveSpeed: 5
   viewSpeed: 250
   cameraOffset: {x: 0, y: 0, z: 0}
   isAiming: 0
   isReload: 0
+  _isCover: 0
   aimTarget: {fileID: 489788984}
   gunMuzzle: {fileID: 93785696}
+  HP: 100
+  shootVFX: {fileID: 0}
 --- !u!136 &11275645
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -951,6 +957,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3d07b6edf2ff81499d018f86366d83f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  verticalRotation: 0
+  verticalRotationLimit: 30
+  verticalSensitivity: 1
 --- !u!1 &974231161
 GameObject:
   m_ObjectHideFlags: 0
@@ -18753,7 +18762,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &6444687778163171718
 GameObject:
   m_ObjectHideFlags: 0
