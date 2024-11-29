@@ -58,6 +58,7 @@ public class CinemachineEnd : MonoBehaviour
         Debug.Log("B");
 
         Player[0].SetActive(false);
+        Player[2].SetActive(true);
         Player[1].SetActive(true);
 
         if (brain != null)
