@@ -27,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
     public bool isAiming = false;
     public bool isReload = false;
     private int _leftBullets = 30;
+    public int leftBulletsForCount;
     private bool _canMove = true;
     [SerializeField]
     private bool _isCover = false;
@@ -47,7 +48,7 @@ public class PlayerMovement : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
         _cameraMovement = Camera.main.GetComponent<CameraMovement>();
-        _aimIndicator = GameObject.Find("CrossHair");
+        _aimIndicator = GameObject.Find("CrossHairHandMade");
         _vfxPool = FindObjectOfType<ObjectPool>();
         Cursor.lockState = CursorLockMode.Locked; 
     }
@@ -61,6 +62,8 @@ public class PlayerMovement : MonoBehaviour
         ReloadSystem();
         TakeCover();
         _cameraMovement.MoveCamera(this, aimTarget);
+
+        leftBulletsForCount = _leftBullets;
     }
     private void TakeCover()
     {
@@ -196,8 +199,8 @@ public class PlayerMovement : MonoBehaviour
                 if (enemy.collider.CompareTag("Enemy"))
                 {
                     Debug.Log("적 맞춤");
-                    enemy.collider.GetComponent<Enemy_3D>().HP -= 1;
-                    Debug.Log("enemy HP = " + enemy.collider.GetComponent<Enemy_3D>().HP);
+                    enemy.collider.GetComponent<NormalEnemy>().HP -= 1;
+                    Debug.Log("enemy HP = " + enemy.collider.GetComponent<NormalEnemy>().HP);
                 }
             }
             RayTest(muzzlePosition, directionToTarget, maxDistance);
