@@ -11,14 +11,17 @@ public class CinemachineEnd : MonoBehaviour
     [SerializeField]
     private GameObject fadePrefab; // 페이드 프리팹
 
-    public GameObject [] Player = new GameObject[2];
+    public GameObject [] Player = new GameObject[2]; // 0 더미 // 1 플레이어 // 2 조준선
 
     private bool _isend = false;
     void Awake()
     {
-        Player[0].SetActive(true);
-        Player[1].SetActive(false);
-        Player[2].SetActive(false);
+        if (Player[0] != null)
+            Player[0].SetActive(true);
+        if (Player[1] != null)
+            Player[1].SetActive(false);
+        if (Player[2] != null)
+            Player[2].SetActive(false);
     }
 
     void Start()
@@ -56,10 +59,10 @@ public class CinemachineEnd : MonoBehaviour
         yield return new WaitForSeconds(3f);
         fadeScript.StartFadeIn();
         Debug.Log("B");
-
+        
         Player[0].SetActive(false);
-        Player[2].SetActive(true);
         Player[1].SetActive(true);
+        Player[2].SetActive(true);
 
         if (brain != null)
         {

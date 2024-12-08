@@ -15,6 +15,8 @@ public class PlayerMovement : MonoBehaviour
     private bool _mouseRight;
     private bool _KeySpace;
     private bool _keyR;
+    private bool _keyESC;
+    private bool _cursorActive;
     
     
     // animator
@@ -39,10 +41,17 @@ public class PlayerMovement : MonoBehaviour
     private CameraMovement _cameraMovement;
     private float _fireRate = 1f / 10f;
     private float _lastFireTime = 0f;
-    public int HP = 100;
+    public float HP = 100;
             // combet VFX
             public GameObject shootVFX;
             private ObjectPool _vfxPool;
+
+    // extra
+    public bool isTalk = false;
+    void Awake()
+    {
+        Init();
+    }
 
     void Start()
     {
@@ -50,17 +59,23 @@ public class PlayerMovement : MonoBehaviour
         _cameraMovement = Camera.main.GetComponent<CameraMovement>();
         _aimIndicator = GameObject.Find("CrossHairHandMade");
         _vfxPool = FindObjectOfType<ObjectPool>();
-        Cursor.lockState = CursorLockMode.Locked; 
+    }
+    private void Init()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        isTalk = false;
     }
 
     void Update()
     {
         HandleInput();
         MovePlayer();
-        UpdateAnimation();
         Aiming();
         ReloadSystem();
+        UpdateAnimation();
         TakeCover();
+        SetMouseCursor();
         _cameraMovement.MoveCamera(this, aimTarget);
 
         leftBulletsForCount = _leftBullets;
@@ -130,19 +145,29 @@ public class PlayerMovement : MonoBehaviour
     }
     private void HandleInput()
     {
+        if (isTalk) 
+        {
+            // 대화 중에는 입력값 초기화
+            _horizontal = 0;
+            _vertical = 0;
+            _mouseX = 0;
+            AnimatorInTalk();
+            return;
+        }
         float rawHorizontal = Input.GetAxisRaw("Horizontal");
         float rawVertical = Input.GetAxisRaw("Vertical");
 
         // 보간하여 부드럽게 값 변경
         _horizontal = Mathf.MoveTowards(_horizontal, rawHorizontal, Time.deltaTime * 3f); // 10f는 보간 속도
         _vertical = Mathf.MoveTowards(_vertical, rawVertical, Time.deltaTime * 3f);
-
+        
         _mouseX = Input.GetAxis("Mouse X") * viewSpeed * Time.deltaTime;
         mouseY = Input.GetAxis("Mouse Y");
         _mouseLeft = Input.GetMouseButton(0);
         _mouseRight = Input.GetMouseButtonDown(1);
         _KeySpace = Input.GetKeyDown(KeyCode.Space);
         _keyR = Input.GetKeyDown(KeyCode.R);
+        _keyESC = Input.GetKeyDown(KeyCode.Escape);
         ControllSpeed();
     }
     private void Aiming()
@@ -294,7 +319,7 @@ public class PlayerMovement : MonoBehaviour
     private void UpdateAnimation()
     {
         float movementMagnitude = new Vector3(_horizontal, 0, _vertical).magnitude; // 이거 뭐임??
-        if (_canMove)
+        if (_canMove && !isTalk)
         {
             _animator.SetFloat("X", _vertical);
             _animator.SetFloat("Y", _horizontal);
@@ -303,6 +328,39 @@ public class PlayerMovement : MonoBehaviour
         }
         _animator.SetBool("IsCover", _isCover);
     }
+    private void AnimatorInTalk()
+    {
+        _animator.SetFloat("X", 0);
+        _animator.SetFloat("Y", 0);
+        _animator.SetBool("IsAiming", false);
+        _animator.SetBool("IsReload", isReload);
+}
+
+    private void SetMouseCursor()
+    {
+        if (isTalk)
+        {
+            _cursorActive = true;
+            Cursor.lockState = CursorLockMode.Confined;
+            Cursor.visible = true;
+            Debug.Log("대화중");
+        }
+        else if (_keyESC && !isTalk)
+        {
+            _cursorActive = !_cursorActive;
+            Cursor.lockState = _cursorActive ? CursorLockMode.Confined : CursorLockMode.Locked;
+            Cursor.visible = _cursorActive ? true : false;
+            Debug.Log("Mouse: " + _cursorActive);
+        }
+    }
+    public void SetMouseCursorOff()
+    {
+        _cursorActive = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        Debug.Log("마우스는 서비스 종료다");
+    }
+
 
     IEnumerator WallJump()
     {
