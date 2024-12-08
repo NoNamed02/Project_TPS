@@ -1,6 +1,7 @@
 using UnityEngine;
 using Cinemachine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class CinemachineEnd : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class CinemachineEnd : MonoBehaviour
     private GameObject fadePrefab; // 페이드 프리팹
 
     public GameObject [] Player = new GameObject[2]; // 0 더미 // 1 플레이어 // 2 조준선
+    public List<GameObject> Enemys;
 
     private bool _isend = false;
     void Awake()
@@ -63,6 +65,11 @@ public class CinemachineEnd : MonoBehaviour
         Player[0].SetActive(false);
         Player[1].SetActive(true);
         Player[2].SetActive(true);
+
+        foreach (var enemy in Enemys)
+        {
+            enemy.SetActive(true);
+        }
 
         if (brain != null)
         {
