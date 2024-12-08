@@ -1323,16 +1323,8 @@ MonoBehaviour:
   sortAlpha: 1
   showRangeSoundGizmos: 1
   showSelectedRangeSoundGizmos: 1
-  rangeGizmoColor:
-    r: 0
-    g: 1
-    b: 0
-    a: 1
-  selectedRangeGizmoColor:
-    r: 0
-    g: 1
-    b: 1
-    a: 1
+  rangeGizmoColor: {r: 0, g: 1, b: 0, a: 1}
+  selectedRangeGizmoColor: {r: 0, g: 1, b: 1, a: 1}
   showAdvancedSettings: 0
   showLocalization: 0
   showVideoPlayerSettings: 0
@@ -1372,6 +1364,7 @@ MonoBehaviour:
   occlusionRayCastOffset: 0
   occlusionUseLayerMask: 0
   occlusionLayerMask:
+    serializedVersion: 2
     m_Bits: 0
   occlusionShowRaycasts: 1
   occlusionShowCategories: 0
@@ -1451,12 +1444,14 @@ MonoBehaviour:
     ShowCurves: 1
     AffectVolume: 1
     VolumeAnimationCurve:
+      serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
     AffectPitch: 0
     PitchAnimationCurve:
+      serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
@@ -1465,12 +1460,14 @@ MonoBehaviour:
     ShowSphereGizmo: 0
     AffectLowPassFilter: 0
     LowPassAnimationCurve:
+      serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
     AffectHighPassFilter: 0
     HighPassAnimationCurve:
+      serializedVersion: 2
       m_Curve: []
       m_PreInfinity: 2
       m_PostInfinity: 2
@@ -1479,13 +1476,6 @@ MonoBehaviour:
   parameterCommands: []
   frames: 0
   showUnityMixerGroupAssignment: 1
-  _isStoppingMultiple: 0
-  _repriTime: -1
-  _groupsToRemove: []
-  _mustRescanGroups: 0
-  _trans: {fileID: 0}
-  _soundsLoaded: 0
-  _warming: 0
 --- !u!4 &897848564
 Transform:
   m_ObjectHideFlags: 0
@@ -1642,49 +1632,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1b7eb7dcef8b0e48a8572747ca7c64d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _objectToFollow: {fileID: 0}
-  _objectToFollowGo: {fileID: 0}
-  _isFollowing: 0
-  _variation: {fileID: 0}
-  _priorityLastUpdated: -10
-  _useClipAgePriority: 0
-  _waitMode: 0
-  _varAudio: {fileID: 0}
-  _parentGrp: {fileID: 0}
-  _trans: {fileID: 0}
-  _frameNum: -1
-  _inited: 0
-  _fadeOutStartTime: -5
-  _fadeInOutWillFadeOut: 0
-  _hasFadeInOutSetMaxVolume: 0
-  _fadeInOutInFactor: 0
-  _fadeInOutOutFactor: 0
-  _fadeOutEarlyTotalFrames: 0
-  _fadeOutEarlyFrameVolChange: 0
-  _fadeOutEarlyFrameNumber: 0
-  _fadeOutEarlyOrigVol: 0
-  _fadeToTargetFrameVolChange: 0
-  _fadeToTargetFrameNumber: 0
-  _fadeToTargetOrigVol: 0
-  _fadeToTargetTotalFrames: 0
-  _fadeToTargetVolume: 0
-  _fadeOutStarted: 0
-  _lastFrameClipTime: -1
-  _isPlayingBackward: 0
-  _pitchGlideToTargetTotalFrames: 0
-  _pitchGlideToTargetFramePitchChange: 0
-  _pitchGlideToTargetFrameNumber: 0
-  _glideToTargetPitch: 0
-  _glideToTargetOrigPitch: 0
-  _hasStartedNextInChain: 0
-  _isWaitingForQueuedOcclusionRay: 0
-  _framesPlayed: 0
-  _hasScheduledNextClip: 0
-  _hasScheduledEndLinkedGroups: 0
-  _lastFrameClipPosition: -1
-  _timesLooped: 0
-  _isPaused: 0
-  _pauseTime: 0
 --- !u!114 &1007140898
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1736,35 +1683,6 @@ MonoBehaviour:
   curPitchMode: 0
   curDetectEndMode: 0
   frames: 0
-  _audioSource: {fileID: 0}
-  _distFilter: {fileID: 0}
-  _echoFilter: {fileID: 0}
-  _hpFilter: {fileID: 0}
-  _lpFilter: {fileID: 0}
-  _reverbFilter: {fileID: 0}
-  _chorusFilter: {fileID: 0}
-  _objectName: 
-  _maxVol: 1
-  _instanceId: -1
-  _maxLoops: 0
-  _varUpdater: {fileID: 0}
-  _previousSoundFinishedFrame: -1
-  _soundGroupName: 
-  _loadStatus: 0
-  _isStopRequested: 0
-  _isPaused: 0
-  _isWarmingPlay: 0
-  _trans: {fileID: 0}
-  _go: {fileID: 0}
-  _objectToFollow: {fileID: 0}
-  _objectToTriggerFrom: {fileID: 0}
-  _parentGroupScript: {fileID: 0}
-  _attachToSource: 0
-  _resFileName: 
-  _hasStartedEndLinkedGroups: 0
-  _isUnloadAddressableCoroutineRunning: 0
-  _ambientFollower: {fileID: 0}
-  <LastTimePlayed>k__BackingField: 0
 --- !u!82 &1007140899
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2116,7 +2034,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   loadingBar: {fileID: 757052060}
   loadingText: {fileID: 272905095}
-  sceneToLoad: SampleScene
+  sceneToLoad: PlayScene
 --- !u!224 &1487799638
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2361,12 +2279,6 @@ MonoBehaviour:
   soundPlayedCustomEvent: 
   willCleanUpDelegatesAfterStop: 1
   frames: 611
-  _activeAudioSourcesIds: 
-  _objectName: 
-  _trans: {fileID: 0}
-  _originalVolume: 1
-  isPaused: 0
-  <ChainLoopCount>k__BackingField: 0
 --- !u!1 &1809445553
 GameObject:
   m_ObjectHideFlags: 0
