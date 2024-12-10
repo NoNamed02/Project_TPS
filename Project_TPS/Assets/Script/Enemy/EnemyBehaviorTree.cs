@@ -149,13 +149,14 @@ namespace Core.AI
                     if (hit.collider.CompareTag("Player"))
                     {
                         Debug.Log("Player hit by attack ray!");
+                        hit.collider.GetComponent<PlayerMovement>().HP -= 5;
                         // 플레이어에 데미지를 입히는 로직 추가
                         isPlayerHit = true;
                     }
                 }
                 else
                 {
-                    Debug.DrawRay(transform.position, rayDirection * attackDistance, Color.blue, 1f);
+                    Debug.DrawRay(transform.position, rayDirection * attackDistance, Color.blue, 5f);
                 }
                 Angle += (attackAngle*2) / raysPerAttack;
             }

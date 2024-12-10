@@ -101,7 +101,7 @@ public class PlayerMovement : MonoBehaviour
         {    
             _isCover = false;
         }
-        Debug.DrawRay(transform.position + new Vector3 (0f, 1f, 0f), transform.forward * 1f, Color.blue, 0.5f);
+        //Debug.DrawRay(transform.position + new Vector3 (0f, 1f, 0f), transform.forward * 1f, Color.blue, 0.5f);
     }
     private IEnumerator TakeCoverStart(Transform cover)
     {
@@ -158,7 +158,7 @@ public class PlayerMovement : MonoBehaviour
         float rawVertical = Input.GetAxisRaw("Vertical");
 
         // 보간하여 부드럽게 값 변경
-        _horizontal = Mathf.MoveTowards(_horizontal, rawHorizontal, Time.deltaTime * 3f); // 10f는 보간 속도
+        _horizontal = Mathf.MoveTowards(_horizontal, rawHorizontal, Time.deltaTime * 3f);
         _vertical = Mathf.MoveTowards(_vertical, rawVertical, Time.deltaTime * 3f);
         
         _mouseX = Input.GetAxis("Mouse X") * viewSpeed * Time.deltaTime;
@@ -179,11 +179,13 @@ public class PlayerMovement : MonoBehaviour
         _aimIndicator.SetActive(isAiming);
         if (isAiming)
         {
+            Camera.main.fieldOfView = 40;
             cameraOffset = new Vector3(0f, 1.5f, -2f);
             Shoot();
         }
         else
         {
+            Camera.main.fieldOfView = 60;
             cameraOffset = new Vector3(0f, 2f, -3f);
         }
     }
@@ -311,7 +313,7 @@ public class PlayerMovement : MonoBehaviour
             if (_vertical > 0.01f && _horizontal != 0) // WD
             {
                 //Debug.Log("check");
-                transform.rotation = transform.rotation * Quaternion.Euler(0, _horizontal * 0.5f, 0);
+                transform.rotation = transform.rotation * Quaternion.Euler(0, _horizontal * 0.8f, 0);
             }
         }
     }
@@ -334,7 +336,7 @@ public class PlayerMovement : MonoBehaviour
         _animator.SetFloat("Y", 0);
         _animator.SetBool("IsAiming", false);
         _animator.SetBool("IsReload", isReload);
-}
+    }
 
     private void SetMouseCursor()
     {

@@ -31,6 +31,7 @@ public class StartDialogue : MonoBehaviour
             Debug.Log($"Hit object: {hit.collider.name}, Tag: {hit.collider.tag}");
             if (hit.collider.CompareTag("NPC"))
             {
+                hit.collider.gameObject.transform.LookAt(gameObject.transform);
                 _player.isTalk = true;
                 Transform conversant = hit.collider.transform;
                 NPC = hit.collider.GetComponent<SetDialogueForNPC>();

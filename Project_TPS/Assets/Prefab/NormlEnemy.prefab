@@ -183,7 +183,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
@@ -222,6 +222,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HP: 10
+  VFX: {fileID: 183222, guid: f2ee009e61b1177489331d95174281b1, type: 3}
 --- !u!114 &765589427714449315
 MonoBehaviour:
   m_ObjectHideFlags: 0
