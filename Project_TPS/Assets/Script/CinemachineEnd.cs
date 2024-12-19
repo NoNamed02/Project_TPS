@@ -85,10 +85,7 @@ public class CinemachineEnd : MonoBehaviour
             enemy.SetActive(true);
         }
 
-        if (brain != null)
-        {
-            brain.enabled = false;
-        }
+        brain.enabled = false;
         CinemachineSelf.SetActive(false);
     }
 }

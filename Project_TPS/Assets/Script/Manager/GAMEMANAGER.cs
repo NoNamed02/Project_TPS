@@ -2,12 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using DarkTonic.MasterAudio;
+
 public class GAMEMANAGER : MonoBehaviour
 {
     public static GAMEMANAGER Instance = null;
     public bool getBlueCard = false;
     void Awake()
     {
+        
+        MasterAudio.PlaySound3DAtTransform("BGMAlone_320", transform);
         Init();
     }
     private void Init()
@@ -34,5 +38,14 @@ public class GAMEMANAGER : MonoBehaviour
         {
             StartCoroutine(CursorOff());
         }
+    }
+
+    public void PlaySound(string BGMName, Transform transform)
+    {
+        MasterAudio.PlaySound3DAtTransform(BGMName, transform);
+    }
+    public void StopBGM()
+    {
+        //MasterAudio.StopAllOfSound()
     }
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class EnemyBoss : NormalEnemy
 {
+    public PlayerMovement player;
     void Start()
     {
         HP = 20;
@@ -21,8 +22,13 @@ public class EnemyBoss : NormalEnemy
         {
             GAMEMANAGER.Instance.getBlueCard = true;
             Debug.Log("보스 죽음");
-            Instantiate(VFX, transform.position, Quaternion.identity);
-            //Destroy(gameObject);
+            Instantiate(VFX, transform.position + new Vector3(0, 3, 0), Quaternion.identity);
+            Instantiate(VFX, transform.position + new Vector3(Random.Range(-5, 5), 3, Random.Range(-5, 5)), Quaternion.identity);
+            //Instantiate(VFX, transform.position + new Vector3(Random.Range(-5, 5), 2, Random.Range(-5, 5)), Quaternion.identity);
+            //Instantiate(VFX, transform.position + new Vector3(Random.Range(-5, 5), 1, Random.Range(-5, 5)), Quaternion.identity);
+            //Instantiate(VFX, transform.position + new Vector3(Random.Range(-5, 5), 3, Random.Range(-5, 5)), Quaternion.identity);
+            player.PlayNormalBGM();
+            Destroy(gameObject);
         }
     }
 }

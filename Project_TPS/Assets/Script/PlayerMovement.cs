@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using DarkTonic.MasterAudio;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -51,6 +52,8 @@ public class PlayerMovement : MonoBehaviour
     void Awake()
     {
         Init();
+        //GAMEMANAGER.Instance.PlaySound("BGMAlone_320", transform);
+        //MasterAudio.PlaySound3DAtTransform("BGMAlone_320", transform);
     }
 
     void Start()
@@ -76,6 +79,7 @@ public class PlayerMovement : MonoBehaviour
         UpdateAnimation();
         TakeCover();
         SetMouseCursor();
+        PlayWalkSound();
         _cameraMovement.MoveCamera(this, aimTarget);
 
         leftBulletsForCount = _leftBullets;
@@ -131,6 +135,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_keyR && !isReload)
         {
+            MasterAudio.PlaySound3DAtTransform("gun_reloading", transform);
             StartCoroutine(ReLoadStart());
             Debug.Log("left bullet : " + _leftBullets);
         }
@@ -362,6 +367,31 @@ public class PlayerMovement : MonoBehaviour
         Cursor.visible = false;
         Debug.Log("마우스는 서비스 종료다");
     }
+
+    void PlayWalkSound()
+    {
+        if (Math.Abs(_horizontal) + Math.Abs(_vertical) > 0)
+        {
+            //MasterAudio.PlaySound3DAtTransform("WalkSound", transform);
+        }
+        else
+        {
+            //MasterAudio.StopAllOfSound("WalkSound");
+        }
+    }
+
+    public void PlayBossBGM()
+    {
+        MasterAudio.StopAllOfSound("BGMAlone_320");
+        MasterAudio.PlaySound("Electric_Wild");
+    }
+
+    public void PlayNormalBGM()
+    {
+        MasterAudio.StopAllOfSound("Electric_Wild");
+        MasterAudio.PlaySound("BGMAlone_320");
+    }
+
 
 
     IEnumerator WallJump()
